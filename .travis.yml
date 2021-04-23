@@ -1,21 +1,11 @@
 language: go
 
 go:
- - 1.9
  - tip
- - release
 
 # Skip the install step. Don't `go get` dependencies/
 # Build using the code in vendor/
 install: true
-
-matrix:
- # It's ok if our code fails on unstable versions of go
- allow_failures:
-  - go: tip
- # Don't wait for tip tests to finish. Mark green if the tests
- # pass on stable versions of go.
- fast_finish: true
 
 notifications:
  # Don't email me the results of the test runs.
