@@ -1,0 +1,40 @@
+language: go
+
+go:
+ - 1.9
+ - tip
+ - release
+
+# Skip the install step. Don't `go get` dependencies/
+# Build using the code in vendor/
+install: true
+
+matrix:
+ # It's ok if our code fails on unstable versions of go
+ allow_failures:
+  - go: tip
+ # Don't wait for tip tests to finish. Mark green if the tests
+ # pass on stable versions of go.
+ fast_finish: true
+
+notifications:
+ # Don't email me the results of the test runs.
+ - email: false
+
+before_script:
+  - GOFILES=$(find . -iname '*.go' -type f | grep -v /vendor/) # all the go files excluding vendor
+  - go get -u golang.org/x/lint/golint                          # Linter
+  - go get honnef.co/go/tools/cmd/staticcheck                   # Badass static analyzer/linter
+  - go get github.com/fzipp/gocyclo
+
+script:
+  - test -z $(gofmt -l $GOFILES) # fail if a go file has not been formatted by gofmt
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+  - go vet .
+  - staticcheck .
+  - gocyclo -over 19 $GOFILES
+  - golint -set_exit_status $(go list .)
+
+# push results to codecov
+post_script:
+  - bash <(curl -s https://codecov.io/bash)
